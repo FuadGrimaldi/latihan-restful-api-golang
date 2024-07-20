@@ -15,14 +15,9 @@ func getAllTodoHandler(db *sql.DB) echo.HandlerFunc {
 		todos, err := service.GetAllTodos(db)
 		fmt.Println(todos)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"message": "Internal server error",
-			})
+			return JSONResponse(c, http.StatusInternalServerError, err.Error(), nil)
 		}
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "successfully get all todos",
-			"data":    todos,
-		})
+		return JSONResponse(c, http.StatusOK, "successfully get all todos", todos)
 	}
 }
 // handler to get todo by id
@@ -31,16 +26,29 @@ func getTodoHandler(db *sql.DB) echo.HandlerFunc {
 		id := c.Param("id")
 		t, err := service.GetTodoById(db, id)
 		if err == sql.ErrNoRows {
-			return c.JSON(http.StatusNotFound, map[string]interface{}{
-				"message": "Todo not found",
-			})
+			return JSONResponse(c, http.StatusNotFound, err.Error(), nil)
 		} else if err != nil {
 			c.Logger().Error(err) 
-			return c.JSON(http.StatusInternalServerError, err)
+			return JSONResponse(c, http.StatusInternalServerError, err.Error(), nil)
 		}
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "successfully get todo by id",
-			"data":    t,
-		})
+		return JSONResponse(c, http.StatusOK, "successfully get todo by id", t)
 	}
 }
+
+// handler to create todo
+func createTodoHandler(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		t := new(service.Todo)
+		if err := c.Bind(t); err != nil {
+			c.Logger().Error(err)
+			return JSONResponse(c, http.StatusBadRequest, err.Error(), nil)
+		}
+		if err :=t.Create(db); err != nil {
+			c.Logger().Error(err)
+			return JSONResponse(c, http.StatusInternalServerError, err.Error(), nil)
+		}
+		return JSONResponse(c, http.StatusCreated, "Create successfully",t)
+	}
+}
+
+
