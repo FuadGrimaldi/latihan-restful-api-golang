@@ -8,5 +8,6 @@ import (
 
 func Route(e *echo.Echo, db *sql.DB) {
 	e.GET("/", getAllTodoHandler(db))
+	e.GET("/:id", getTodoHandler(db))
 }
 
