@@ -21,6 +21,8 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// db.ConnTest()
+
 	db, err := db.GetConnection(DB_NAME)
 	if err != nil {
 		e.Logger.Fatal(err)
